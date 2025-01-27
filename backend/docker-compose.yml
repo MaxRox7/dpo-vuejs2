@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  nginx-service:
+    image: nginx:stable-alpine
+    container_name: nginx-spa-container-3
+    ports:
+      - "8080:80"
+    volumes:
+      - ./app:/var/www/project
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php82-service
+      - mongo
+    networks:
+      - nginx-php81-mongo
+
+  php82-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: php82-spa-container-3
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./app:/var/www/project
+    networks:
+      - nginx-php81-mongo
+
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: user
+      MONGO_INITDB_ROOT_PASSWORD: user
+
+    container_name: mongo-spa-container-3
+    ports:
+      - 27017:27017
+    networks:
+      - nginx-php81-mongo
+
+networks:
+  nginx-php81-mongo:
+    driver: bridge
+    name: nginx-php81-mongo
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.26.0.0/24
